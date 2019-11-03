@@ -2,7 +2,7 @@ import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 import TextureBuffer from './textureBuffer';
 import { NUM_LIGHTS } from '../scene';
 
-export const MAX_LIGHTS_PER_CLUSTER = 100;
+export const MAX_LIGHTS_PER_CLUSTER = 300;
 
 export default class BaseRenderer {
   constructor(xSlices, ySlices, zSlices) {
@@ -17,7 +17,6 @@ export default class BaseRenderer {
   clamp(value, lower, upper) {
     return Math.max(lower, Math.min(value, upper));
   }
-
 
   updateClusters(camera, viewMatrix, scene) {
     // TODO: Update the cluster texture with the count and indices of the lights in each cluster
