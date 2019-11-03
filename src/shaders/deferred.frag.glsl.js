@@ -53,7 +53,7 @@ export default function(params) {
     // There are more efficient ways if you need adjacent values
     light.radius = ExtractFloat(u_lightbuffer, ${params.numLights}, 2, index, 3);
 
-    light.color = v2.rgb;
+    light.color = v2.rgb * 0.5;
     return light;
   }
 
