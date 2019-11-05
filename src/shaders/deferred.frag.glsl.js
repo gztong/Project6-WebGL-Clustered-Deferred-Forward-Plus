@@ -4,7 +4,6 @@ export default function(params) {
   precision highp float;
   
   uniform sampler2D u_gbuffers[${params.numGBuffers}];
-  
 
   uniform sampler2D u_lightbuffer;
   uniform vec2 u_dimension;
@@ -98,8 +97,10 @@ export default function(params) {
     int num_light = int(ExtractFloat(u_clusterbuffer, u_elementCount, u_pixelsPerElement, index, 0));
     // get light index
     vec3 fragColor = vec3(0.0);
+    
+    // for loop condition has to use compile time value
     for (int i = 1; i <  ${params.numLights}; i++) {
-      // if(i == num_light) break;
+       if(i >= num_light) break;
         
         int lightIndex = int(ExtractFloat(u_clusterbuffer, u_elementCount, u_pixelsPerElement, index, i));
         Light light = UnpackLight(lightIndex);
@@ -116,7 +117,6 @@ export default function(params) {
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
-
 
   }
   `;

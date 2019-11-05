@@ -13,7 +13,6 @@ export default class BaseRenderer {
     this._zSlices = zSlices;
   }
 
-
   clamp(value, lower, upper) {
     return Math.max(lower, Math.min(value, upper));
   }
@@ -45,7 +44,7 @@ export default class BaseRenderer {
     let yMin, yMax;
     let zMin, zMax;
     let cluster_idx;
-    let light_count;
+    let light_count, light_count_index;
     let pixel, pixelComponent;
 
     for (let i = 0; i < NUM_LIGHTS; i++) {
@@ -89,20 +88,19 @@ export default class BaseRenderer {
         for (let y = yMin; y <= yMax; y++) {
           for (let x = xMin; x <= xMax; x++) {
             cluster_idx = x + y * this._xSlices + z * this._xSlices * this._ySlices;
-            light_count = this._clusterTexture.buffer[this._clusterTexture.bufferIndex(cluster_idx, 0)];
+            light_count_index = this._clusterTexture.bufferIndex(cluster_idx, 0)
+            light_count = this._clusterTexture.buffer[light_count_index];
             light_count++;
-
             if (light_count <= MAX_LIGHTS_PER_CLUSTER) { // Note: Using "continue" hurt the performance significantly!!
-              pixel = Math.floor(light_count / 4.0);
+              pixel = Math.floor(light_count * 0.25);
               pixelComponent = light_count % 4;
               this._clusterTexture.buffer[this._clusterTexture.bufferIndex(cluster_idx, pixel) + pixelComponent] = i;
-              this._clusterTexture.buffer[this._clusterTexture.bufferIndex(cluster_idx, 0)] = light_count;
+              this._clusterTexture.buffer[light_count_index] = light_count;
             }
           } // x loop
         }  // y loop
       } // z loop
     }
-
     this._clusterTexture.update();
   }
 }
