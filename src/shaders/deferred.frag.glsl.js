@@ -4,13 +4,13 @@ export default function(params) {
   precision highp float;
   
   uniform sampler2D u_gbuffers[${params.numGBuffers}];
-  
 
   uniform sampler2D u_lightbuffer;
   uniform vec2 u_dimension;
   uniform float u_strideZ;
   uniform float u_near;
   uniform mat4 u_viewMatrix;
+  uniform vec3 u_cameraPos;
   uniform int u_elementCount;
   uniform int u_pixelsPerElement;
 
@@ -87,6 +87,8 @@ export default function(params) {
     // Convert v_position from world to camera space
     vec3 c_position = vec3(u_viewMatrix * vec4(v_position, 1.0));
     c_position.z *= -1.0;
+
+    vec3 cam_pos = vec3(u_viewMatrix * vec4(0,0,0, 1.0));
     
     int x = int(floor(float(num_slices_x) * gl_FragCoord.x / float(u_dimension.x)));
     int y = int(floor(float(num_slices_y) * gl_FragCoord.y / float(u_dimension.y)));
@@ -98,25 +100,34 @@ export default function(params) {
     int num_light = int(ExtractFloat(u_clusterbuffer, u_elementCount, u_pixelsPerElement, index, 0));
     // get light index
     vec3 fragColor = vec3(0.0);
+    
+    // for loop condition has to use compile time value
     for (int i = 1; i <  ${params.numLights}; i++) {
-      // if(i == num_light) break;
+       if(i >= num_light) break;
         
         int lightIndex = int(ExtractFloat(u_clusterbuffer, u_elementCount, u_pixelsPerElement, index, i));
         Light light = UnpackLight(lightIndex);
 
         float lightDistance = distance(light.position, v_position);
+        gl_FragColor = vec4(light.position, 1.0);
+
         vec3 L = (light.position - v_position) / lightDistance; 
         float lightIntensity = cubicGaussian(2.0 * lightDistance / light.radius);
         float lambertTerm = max(dot(L, normal), 0.0);
-        
-        fragColor += albedo * lambertTerm * light.color * vec3(lightIntensity);
+
+        // specular term
+        vec3 lightDir = normalize(light.position - v_position);
+        vec3 H = normalize( normalize(u_cameraPos-v_position) + lightDir  );
+        float specAngle = max(dot(H, normal), 0.0);
+        float specular = pow(specAngle, 15.0); // shininess = 5
+
+        fragColor += ( albedo * lambertTerm * light.color * vec3(lightIntensity) +  albedo * specular * light.color * vec3(lightIntensity) / lightDistance);
     }
 
     const vec3 ambientLight = vec3(0.025);
     fragColor += albedo * ambientLight;
 
     gl_FragColor = vec4(fragColor, 1.0);
-
 
   }
   `;
