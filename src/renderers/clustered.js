@@ -34,7 +34,7 @@ export default class ClusteredRenderer extends BaseRenderer {
     }), {
       uniforms: ['u_gbuffers[0]', 'u_gbuffers[1]', 'u_gbuffers[2]', 'u_gbuffers[3]',
                 'u_viewProjectionMatrix','u_lightbuffer', 'u_clusterbuffer', 
-                'u_viewMatrix','u_dimension','u_elementCount', 'u_pixelsPerElement', 'u_strideZ', 'u_near'],
+                'u_viewMatrix','u_dimension','u_elementCount', 'u_pixelsPerElement', 'u_strideZ', 'u_near', 'u_cameraPos'],
       attribs: ['a_uv'],
     });
 
@@ -170,7 +170,10 @@ export default class ClusteredRenderer extends BaseRenderer {
     gl.uniform1i(this._progShade.u_clusterbuffer, 3);
 
     // TODO: Bind any other shader inputs
-    gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);    
+    gl.uniformMatrix4fv(this._progShade.u_viewMatrix, false, this._viewMatrix);   
+    
+    gl.uniform3f(this._progShade.u_cameraPos, camera.position.x, camera.position.y, camera.position.z);
+    
     gl.uniform2f(this._progShade.u_dimension, canvas.width, canvas.height);
     gl.uniform1f(this._progShade.u_near, camera.near); 
     
